@@ -1,0 +1,19 @@
+{
+  "name": "orchestrate",
+  "description": "Turns Claude Code into a pure orchestrator: plans, decomposes, makes model-selection and review judgment calls, but delegates all production code writing to dispatched agents via a plan -> delegate -> review -> fix loop.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Fortnight",
+    "email": "dahiana@fortnight.studio"
+  },
+  "repository": "https://github.com/mssporto/orchestrate-skill",
+  "license": "MIT",
+  "keywords": [
+    "orchestration",
+    "delegation",
+    "subagents",
+    "code-review",
+    "workflow"
+  ],
+  "skills": "./skills"
+}

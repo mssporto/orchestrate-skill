@@ -1,5 +1,7 @@
 # orchestrate
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 A Claude Code skill that turns the model into a pure orchestrator: it plans, decomposes, makes model-selection and review judgment calls — but never writes production code itself. All actual implementation is delegated to agents dispatched with the **Agent** tool, review is delegated to a fresh agent, and fixes go back to the *same* agent via **SendMessage** instead of a new dispatch.
 
 ## Why
@@ -26,7 +28,14 @@ A key implementation detail: from the review step onward, every Agent/SendMessag
 
 ## Install
 
-Drop `SKILL.md` into a skill directory Claude Code will discover, e.g.:
+As a plugin — add this repo as a marketplace and install it:
+
+```
+/plugin marketplace add mssporto/orchestrate-skill
+/plugin install orchestrate
+```
+
+Or manually — drop `skills/orchestrate/SKILL.md` into a skill directory Claude Code will discover, e.g.:
 
 ```
 ~/.claude/skills/orchestrate/SKILL.md
@@ -37,3 +46,11 @@ Drop `SKILL.md` into a skill directory Claude Code will discover, e.g.:
 ## Use
 
 Invoke explicitly with `/orchestrate`, or just describe non-trivial implementation work (a feature, a multi-file fix, a refactor with more than one moving part) — the skill's description is written to trigger on that shape of task even without naming it directly.
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md).
+
+## License
+
+MIT — see [LICENSE](LICENSE).
