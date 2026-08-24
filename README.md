@@ -2,7 +2,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-A Claude Code skill that turns the model into a pure orchestrator: it plans, decomposes, makes model-selection and review judgment calls — but never writes production code itself. All actual implementation is delegated to agents dispatched with the **Agent** tool, review is delegated to a fresh agent, and fixes go back to the *same* agent via **SendMessage** instead of a new dispatch.
+A Claude Code skill that turns the model into a pure orchestrator: it plans, decomposes, makes model-selection and review judgment calls, but never writes production code itself. All actual implementation is delegated to agents dispatched with the **Agent** tool, review is delegated to a fresh agent, and fixes go back to the *same* agent via **SendMessage** instead of a new dispatch.
 
 ## Why
 
