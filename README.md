@@ -21,6 +21,12 @@ Delegation only pays off when it's structured. Left unguided, an orchestrating m
 
 A key implementation detail: from the review step onward, every Agent/SendMessage call is dispatched in the foreground and its result is waited on before proceeding. Review and fix rounds are sequential dependencies — an orchestrator that backgrounds them has no way to be "woken up" later, and the work gets orphaned. (This was caught by testing an early draft of the skill and traced to exactly that failure mode.)
 
+## Example
+
+**Gates out:** "The error message on a failed password reset says `token invalid` — make it explain that the link expired." One file, one string, one judgment call about wording, and nothing to verify independently of that call. The gate reads this as genuinely tiny: there's nothing to decompose, so a dispatch would buy a round-trip of overhead and a spec longer than the diff. The orchestrator edits the string itself and stops. Same outcome for a missing null check in a single function, or a one-line config change.
+
+**Gates in:** "Add a `POST /invites` endpoint with request validation, a matching invite form in the dashboard, and tests for both." The gate reads this as coverage-shaped — three pieces, each specable and checkable on its own. Decomposition: (1) endpoint plus validation schema, (2) dashboard form, (3) test coverage for both. The endpoint has one obvious shape in a codebase that already has a dozen like it, so Sonnet. The form carries user-facing copy and error states where "correct but ugly" is a real failure, so Opus. The tests mirror the existing suite's pattern, so Sonnet. Endpoint and form dispatch in parallel; tests follow. Review flags that the form surfaces the raw 409 body on a duplicate invite; one SendMessage back to the agent that wrote it resolves it in a single round.
+
 ## Requirements
 
 - Claude Code (or any harness exposing the **Agent** and **SendMessage** tools — spawn-a-subagent and resume-a-subagent-with-context, respectively).
