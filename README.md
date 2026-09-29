@@ -12,14 +12,27 @@ Delegation only pays off when it's structured. Left unguided, an orchestrating m
 
 1. **Gate** — decides whether a task is even worth delegating. Small or single-piece tasks get done directly; only "coverage-shaped" work (independently specable, independently verifiable pieces) goes through the full loop.
 2. **Decompose** — breaks the task into pieces sized so each is independently specable and verifiable, without over-fragmenting into pieces too small to be worth a dispatch.
-3. **Model selection** — judges each piece individually: taste/judgment-heavy work (interface design, UX copy, non-obvious tradeoffs) goes to Opus; mechanical work (boilerplate, config, pattern-following tests) goes to Sonnet.
+3. **Model selection** — judges each piece individually: taste/judgment-heavy work (interface design, UX copy, non-obvious tradeoffs) goes to Opus; mechanical work (boilerplate, config, pattern-following tests) goes to Sonnet. See [Which model does what](#which-model-does-what) below.
 4. **Spec writing** — each dispatched agent starts cold with no visibility into the orchestrator's reasoning, so the spec has to be fully self-contained: goal, context, constraints/non-goals, and acceptance criteria.
 5. **Delegate** — dispatches via the Agent tool, in parallel where pieces are independent.
 6. **Review** — delegates the diff review to a *fresh* agent held to the same acceptance criteria, then the orchestrator itself adjudicates the findings (real problem vs. nitpick vs. spec misunderstanding).
 7. **Fix loop** — sends fixes back to the *same* agent that wrote the piece via SendMessage (not a new Agent call), since a resumed agent keeps its prior context and a fresh one starts over. Capped at 2–3 rounds before escalating.
-8. **Escalate** — if the fix loop doesn't converge, the orchestrator takes the piece over directly, bumps the model tier, or surfaces the issue to the user rather than repeating the same round indefinitely.
+8. **Escalate** — if the fix loop doesn't converge, the orchestrator takes the piece over directly, moves it up to a stronger model (Sonnet → Opus → Fable), or surfaces the issue to the user rather than repeating the same round indefinitely.
 
 A key implementation detail: from the review step onward, every Agent/SendMessage call is dispatched in the foreground and its result is waited on before proceeding. Review and fix rounds are sequential dependencies — an orchestrator that backgrounds them has no way to be "woken up" later, and the work gets orphaned. (This was caught by testing an early draft of the skill and traced to exactly that failure mode.)
+
+## Which model does what
+
+The skill picks a model for each piece of work, the same way you'd pick who on a team should take a task:
+
+| Model | When the skill uses it |
+|---|---|
+| **Opus** | Work where taste matters: designing an interface, writing copy people will read, making a tricky tradeoff. Also the safe pick when it isn't sure. |
+| **Sonnet** | Work with one obvious right answer: boilerplate, config, tests that follow an existing pattern. |
+| **Fable** | The strongest (and most expensive) model. Held back for when Opus has tried and got stuck. |
+| **Haiku** | The fastest and cheapest. Only for looking things up, like finding the right files before writing a spec. Never writes the code. |
+
+The skill asks for models by family name (`opus`, `sonnet`, `fable`, `haiku`), not by version number. Claude Code always maps those names to the newest model in each family, so the skill keeps working as new models come out.
 
 ## Example
 
@@ -52,6 +65,11 @@ Or manually — drop `skills/orchestrate/SKILL.md` into a skill directory Claude
 ## Use
 
 Invoke explicitly with `/orchestrate`, or just describe non-trivial implementation work (a feature, a multi-file fix, a refactor with more than one moving part) — the skill's description is written to trigger on that shape of task even without naming it directly.
+
+## Changelog
+
+- **1.1.0** (2026-09-29): Added Fable and Haiku to the models the skill can choose from. When a piece of work keeps failing, the skill now moves it up one step at a time: Sonnet, then Opus, then Fable. Also made it explicit that the skill asks for models by family name, so it stays current without edits.
+- **1.0.0** (2026-08-24): First release.
 
 ## Contributing
 

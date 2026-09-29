@@ -1,6 +1,6 @@
 ---
 name: orchestrate
-description: Use whenever the user asks for real implementation work — a non-trivial feature, a multi-file fix, a refactor with more than one moving part — and always when the user explicitly types /orchestrate. Runs a plan → delegate → review → fix loop where you (the orchestrator) never write production code yourself. You decompose the task, write a full spec per piece, use the Agent tool to delegate the actual writing (Opus for taste/judgment-heavy work, Sonnet for mechanical work), use the Agent tool again to delegate the diff review, adjudicate its findings yourself, and use SendMessage to send any fixes back to the SAME agent that wrote the code — never a fresh Agent call. Make sure to consider this skill even if the user doesn't say "orchestrate" or "delegate" explicitly, whenever the task at hand is bigger than a one-file edit.
+description: Use whenever the user asks for real implementation work — a non-trivial feature, a multi-file fix, a refactor with more than one moving part — and always when the user explicitly types /orchestrate. Runs a plan → delegate → review → fix loop where you (the orchestrator) never write production code yourself. You decompose the task, write a full spec per piece, use the Agent tool to delegate the actual writing (Opus for taste/judgment-heavy work, Sonnet for mechanical work, Fable when a piece gets stuck), use the Agent tool again to delegate the diff review, adjudicate its findings yourself, and use SendMessage to send any fixes back to the SAME agent that wrote the code — never a fresh Agent call. Make sure to consider this skill even if the user doesn't say "orchestrate" or "delegate" explicitly, whenever the task at hand is bigger than a one-file edit.
 ---
 
 You are the orchestrator. Your job on this task is to plan, decompose, make the hard judgment calls, and review — not to write the production code. Every line of implementation gets written by an agent you dispatch with the **Agent** tool, and every fix goes back through **SendMessage**. This isn't ceremony: your context is the scarcest resource on the task, and it should be spent on the decisions only you can make (what to build, whether a subtask needs taste or just correctness, whether a diff is actually right) rather than on generating code a cheaper model can write just as well.
@@ -35,6 +35,12 @@ Rough intuition, not a lookup table:
 - **Sonnet**: boilerplate, config, tests that mirror an existing pattern, mechanical refactors, plumbing that has one obvious right answer.
 
 When you're genuinely unsure, prefer Opus — a wrong guess toward Sonnet on a taste-sensitive piece costs you a review round-trip; a wrong guess toward Opus on a mechanical piece just costs a bit more.
+
+Two more models are available. Neither is a starting point:
+- **Fable** is the strongest model, and it costs a lot more than Opus. Don't hand it a subtask first. Use it when Opus has already tried and got stuck (see Step 7), or when a piece is clearly harder than Opus can handle, such as deep algorithmic work or a long change where many judgment calls build on each other.
+- **Haiku** is the fastest and cheapest model. Use it only for looking things up: finding the right files, or gathering context before you write a spec. Don't let it write production code or review a diff.
+
+Ask for models by family name (`opus`, `sonnet`, `fable`, `haiku`), never by a version number. Claude Code always maps the family name to the newest model in that family, so these instructions keep working when new models come out.
 
 ## Step 3: Write a full spec — the agent only knows what you tell it
 
@@ -74,7 +80,7 @@ Cap this at 2–3 SendMessage rounds per subtask. If it's not converging by then
 
 If a subtask blows through its fix-round cap, don't keep sending it back to the same agent out of momentum. Pick one:
 - Take the piece over yourself if it's now small enough that finishing it directly is faster than another round-trip.
-- Escalate the model tier with a *new* **Agent** call (bump Sonnet to Opus if the failures look like judgment gaps, not mechanical slip-ups) — this is a fresh dispatch, not a SendMessage, since you're deliberately not carrying forward whatever approach the stuck agent was stuck on.
+- Escalate the model tier with a *new* **Agent** call (move up one step at a time, Sonnet → Opus → Fable, if the failures look like judgment gaps rather than careless slips) — this is a fresh dispatch, not a SendMessage, since you're deliberately not carrying forward whatever approach the stuck agent was stuck on.
 - Surface it to the user if the repeated failure suggests the spec itself was wrong, not the execution.
 
 ## What you never do
